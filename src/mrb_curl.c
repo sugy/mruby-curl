@@ -151,6 +151,7 @@ mrb_curl_set_options(mrb_state *mrb, mrb_value self) {
   mrb_value mv_cainfo = mrb_nil_value();
   mrb_value timeout;
   mrb_value timeout_ms;
+  mrb_value http_transfer_decoding;
   struct RClass* _class_curl;
 
   _class_curl = mrb_class_get(mrb, "Curl");
@@ -181,6 +182,11 @@ mrb_curl_set_options(mrb_state *mrb, mrb_value self) {
   }
   if (!mrb_nil_p(timeout_ms)) {
     curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, mrb_int(mrb, timeout_ms));
+  }
+
+  http_transfer_decoding = mrb_const_get(mrb, mrb_obj_value(_class_curl), mrb_intern_cstr(mrb, "HTTP_TRANSFER_DECODING"));
+  if (!mrb_nil_p(http_transfer_decoding)) {
+    curl_easy_setopt(curl, CURLOPT_HTTP_TRANSFER_DECODING, mrb_int(mrb, http_transfer_decoding));
   }
 }
 
@@ -215,7 +221,6 @@ mrb_curl_perform(mrb_state *mrb, mrb_value self, mrb_value url, mrb_value header
   curl_easy_setopt(curl, CURLOPT_HEADERDATA, mf);
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, memfwrite);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0);
-  curl_easy_setopt(curl, CURLOPT_HTTP_TRANSFER_DECODING, 0L);
 
   mrb_curl_set_options(mrb, self);
 
@@ -384,7 +389,6 @@ mrb_curl_send(mrb_state *mrb, mrb_value self)
   curl_easy_setopt(curl, CURLOPT_HEADERDATA, mf);
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, memfwrite);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0);
-  curl_easy_setopt(curl, CURLOPT_HTTP_TRANSFER_DECODING, 0L);
 
   mrb_curl_set_options(mrb, self);
 
@@ -484,6 +488,7 @@ mrb_mruby_curl_gem_init(mrb_state* mrb)
   mrb_define_const(mrb, _class_curl, "HTTP_1_1", mrb_fixnum_value(CURL_HTTP_VERSION_1_1));
   mrb_define_const(mrb, _class_curl, "TIMEOUT", mrb_nil_value());
   mrb_define_const(mrb, _class_curl, "TIMEOUT_MS", mrb_nil_value());
+  mrb_define_const(mrb, _class_curl, "HTTP_TRANSFER_DECODING", mrb_nil_value());
 
   mrb_gc_arena_restore(mrb, ai);
 }
